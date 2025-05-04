@@ -1,0 +1,1 @@
+export const JWT_SECRET = "random_fucking_ass";
