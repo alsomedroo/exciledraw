@@ -76,11 +76,10 @@ app.post("/room", middleware, async (req , res) => {
   }
 
   const userId = req.userId;
-  if (!userId) {
-    return res.status(401).json({ message: "User ID missing in request" });
-  }
 
-  const room = await prismaClient.room.create({
+  try{
+    const room = await prismaClient.room.create({
+      //@ts-ignore
     data: {
       slug: parsedData.data.name ?? "",
       adminId: userId,
@@ -88,7 +87,30 @@ app.post("/room", middleware, async (req , res) => {
   });
 
   res.json({ roomId: room.id });
+  }catch(e){
+    res.status(411).json({
+      message:"room already exist"
+    })
+  }
 });
+
+app.get("/chats/:roomId", async(req,res)=>{
+  const roomId = Number(req.params.roomId)
+
+  const messages = await prismaClient.chat.findMany({
+    where:{
+      //@ts-ignore
+      roomId: roomId
+    },
+    orderBy: {
+      id: "desc"
+    },
+    take: 50
+  })
+  res.json({
+    messages
+  })
+})
 
 app.listen(3001, () => {
   console.log("Server is running on http://localhost:3001");
